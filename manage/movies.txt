@@ -1,0 +1,141 @@
+<template>
+	<div class="music">
+		<el-table
+      	:data="tableData"
+     	 style="width: 100%">
+     	 <el-table-column
+	        label="封面图片">
+	        <template slot-scope="scope">
+	        	<!--<div @click="playVideo(scope.$index,scope.row,play)">
+	        	<div @click="scope.row.flag=play">-->
+	        		<img  style="width: 60px;height: 60px;"  :src="scope.row.pic"/> 
+	        		<!--<div style="position: relative; top: -50px; left: -15px;">
+	        			<i class="el-icon-video-pause" v-if="scope.row.flag" style="font-size: 30px; position: absolute; " ></i>
+			        	<i class="el-icon-video-play" v-else style="font-size: 30px; position: absolute; " ></i>
+			        	
+	        		</div>
+			       	<video id="myVideo" hidden="hidden" name="media">
+			       	  <source :src="scope.row.musicLink" type="audio/mp4">
+			       	</video>
+	        	</div>
+	        	</div>-->
+	        </template>
+	      </el-table-column>
+	      <el-table-column
+	        prop="musicsName"
+	        label="歌曲名">
+	      </el-table-column>
+	      <el-table-column
+	        prop="author"
+	        label="歌手名">
+	      </el-table-column>
+	       <el-table-column
+	        prop="detail"
+	        label="歌曲详情"
+	        width="200">
+	      </el-table-column>
+	      <el-table-column
+	        prop="time"
+	        label="上传日期">
+	      </el-table-column>
+	     <el-table-column
+	     	label="操作"
+	     	width="200">
+	     	<template slot-scope="scope">
+		     	<el-button type="primary" @click="handleEdit(scope.$index,scope.row)">编辑</el-button>
+		     	<el-button type="danger" @click="handleDelete(scope.$index,scope.row)">删除</el-button>
+	     	</template>
+	     </el-table-column>
+	    </el-table>
+	    <el-pagination
+		  background
+		  layout="prev, pager, next"
+		  :total="total"
+		  :page-size="size"
+		  @current-change="change"
+		  >
+		</el-pagination>
+	</div>
+</template>
+
+<script>
+export default {
+      data() {
+        return {
+//      	play:false,
+         	flag:false,
+         	tableData: [],
+         	size:2,
+         	total:1
+        }
+      },
+     created(){
+      	 this.getData(1)
+      },
+      methods:{
+      	  format(time){
+      	  	time = new Date(time)
+      	  	return time.getFullYear()+"-"+(time.getMonth()+1)+"-"+time.getDate()
+      	  },
+      	  change(current){
+      	  	  this.getData(current)
+      	  },
+      	  async getData(current){
+      	  	let res = await this.$http.get("/music",{
+      	  		params:{size:this.size,current}
+      	  	});
+      	  	console.log(res)
+      	  	this.total = res.data.total;
+    	    this.tableData = res.data.data.map(i=>{
+	    		i.time = this.format(i.time)
+	    		i.flag = false;
+	    		return i
+	    	});
+      	  },
+//    	  playVideo(index,row,play){
+//    	  		console.log(row)
+//				console.log(index)
+//	      	  	if(!row.flag){
+//	      	  		row.flag=true;
+//	      	  		this.play=true;
+//	      	  		myVideo[index].play();
+//	      	  		return this.play;
+//	      	  	}else{
+//	      	  		row.flag=false;
+//	      	  		this.play=false;
+//	      	  		myVideo[index].pause()
+//	      	  		return this.play;
+//	      	  	}
+//	      	  	console.log(myVideo[index])
+//			
+//    	  },
+      	  handleEdit(index,row){
+      	  	//console.log(index,row)
+      	  	this.$router.push({name:"updatemusic",params:{row}})
+      	  },
+      	  async handleDelete(index,row){
+      	  	//console.log(index,row)
+      	  	let res = await this.$http.delete("/music?id="+row._id);
+      	  	this.$message({
+      	  		message:res.data,
+      	  		type:'success'
+      	  	})
+      	  	this.getData(1)
+      	  }
+      }
+}
+</script>
+
+<style lang="less">
+
+.el-button{padding: 8px 10px;}
+.el-table th>.cell{
+	text-align: center;
+}
+.el-table__row td{
+	text-align: center;
+}
+.el-table, .cell{
+	white-space: nowrap !important; 
+}
+</style>
